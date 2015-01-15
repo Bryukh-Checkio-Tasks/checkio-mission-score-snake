@@ -1,7 +1,7 @@
 from random import randint
 from checkio.signals import ON_CONNECT
 from checkio import api
-from checkio.referees.multicall import CheckiORefereeMulti
+from multi_score import CheckiORefereeMultiScore
 
 from tests import TESTS
 
@@ -161,7 +161,7 @@ def is_win_referee(referee_data):
 
 api.add_listener(
     ON_CONNECT,
-    CheckiORefereeMulti(
+    CheckiORefereeMultiScore(
         tests=TESTS,
         initial_referee=initial_referee,
         process_referee=process_referee,
