@@ -1,3 +1,4 @@
+import random
 from checkio.referees.multicall import CheckiORefereeMulti
 from checkio import api
 from checkio.signals import PROCESS_ENDED
@@ -18,6 +19,8 @@ class CheckiORefereeMultiScore(CheckiORefereeMulti):
             if not result:
                 api.fail(0, result_message)
         self.seed = data.get("seed", "checkio")
+        random.seed(self.seed)
+
         self.start_env()
 
         api.add_process_listener(REQ, PROCESS_ENDED, self.process_req_ended)
