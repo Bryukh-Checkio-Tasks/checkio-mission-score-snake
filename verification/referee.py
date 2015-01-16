@@ -18,7 +18,7 @@ EMPTY = "."
 
 SIZE = 10
 DISTANCE = 5
-INITIAL_STEPS = 300
+INITIAL_STEPS = 200
 
 
 def find_snake(field_map):

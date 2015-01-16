@@ -114,7 +114,7 @@ requirejs(['ext_editor_1', 'jquery_190', 'raphael_210', 'snap.svg_030'],
                 var rightResult = data.ext["answer"];
                 var userResult = data.out;
                 var result = data.ext["result"];
-                var result_addon = data.ext["result_addon"];
+                var result_text = data.ext["result_text"];
                 var route = data.ext["route"];
 
                 var canvas = new SnakeCanvas();
@@ -125,7 +125,7 @@ requirejs(['ext_editor_1', 'jquery_190', 'raphael_210', 'snap.svg_030'],
                 var explanation = data.ext["explanation"];
                 $content.find('.output').html('&nbsp;Your result:&nbsp;' + JSON.stringify(userResult));
                 if (!result) {
-                    $content.find('.answer').html(result_addon);
+                    $content.find('.answer').html(result_text);
                     $content.find('.answer').addClass('error');
                     $content.find('.output').addClass('error');
                     $content.find('.call').addClass('error');
