@@ -80,7 +80,7 @@ requirejs(['ext_editor_1', 'jquery_190', 'raphael_210', 'snap.svg_030'],
             }
 
             //YOUR FUNCTION NAME
-            var fname = 'checkio';
+            var fname = 'move_snake';
 
             var checkioInput = data.in;
             var checkioInputStr = fname + '(' + JSON.stringify(checkioInput) + ')';
@@ -115,12 +115,17 @@ requirejs(['ext_editor_1', 'jquery_190', 'raphael_210', 'snap.svg_030'],
                 var userResult = data.out;
                 var result = data.ext["result"];
                 var result_addon = data.ext["result_addon"];
+                var route = data.ext["route"];
+
+                var canvas = new SnakeCanvas();
+                canvas.createCanvas($content.find(".explanation")[0], checkioInput);
+                canvas.animateCanvas(route);
 
                 //if you need additional info from tests (if exists)
                 var explanation = data.ext["explanation"];
                 $content.find('.output').html('&nbsp;Your result:&nbsp;' + JSON.stringify(userResult));
                 if (!result) {
-                    $content.find('.answer').html('Right result:&nbsp;' + JSON.stringify(rightResult));
+                    $content.find('.answer').html(result_addon);
                     $content.find('.answer').addClass('error');
                     $content.find('.output').addClass('error');
                     $content.find('.call').addClass('error');
@@ -187,10 +192,167 @@ requirejs(['ext_editor_1', 'jquery_190', 'raphael_210', 'snap.svg_030'],
             this.animate = function(){};
         }
 
-        //Your Additional functions or objects inside scope
-        //
-        //
-        //
+        function SnakeCanvas() {
+            var format = Raphael.format;
+
+            var colorOrange4 = "#a83901";
+            var colorOrange3 = "#ca4701";
+            var colorOrange2 = "#fa5e09";
+            var colorOrange1 = "#Ff935b";
+
+            var colorBlue4 = "#115d81";
+            var colorBlue3 = "#2b95c5";
+            var colorBlue2 = "#9ad0ec";
+            var colorBlue1 = "#dceaf1";
+
+            var colorGrey4 = "#000000";
+            var colorGrey3 = "#373737";
+            var colorGrey2 = "#7e7e7e";
+            var colorGrey1 = "#cecece";
+
+            var colorWhite = "#FFFFFF";
+
+            var colorDark = colorBlue4;
+            var colorAlmostDark = colorBlue3;
+            var colorOrange = colorOrange3;
+            var colorBlue = colorBlue2;
+            var colorLightBlue = colorBlue1;
+            var colorWhite = "#FFFFFF";
+
+            var delay = 300;
+            var stepDelay = delay * 1.1;
+
+            var zx = 30;
+            var cellN = 10;
+            var cellSize = 30;
+            var fullSize = zx * 2 + cellN * cellSize;
+
+            var attrOuter = {"stroke-width": 2, "stroke": colorDark};
+            var attrInner = {"stroke-width": 1, "stroke": colorBlue};
+            var attrTree = {"stroke-width": 1, "stroke": colorDark, "fill": colorDark};
+            var attrCherry = {"stroke": colorOrange, "fill": colorOrange};
+            var attrSnake = {"stroke": colorAlmostDark, "stroke-width": 13,
+                "stroke-linecap": "round", "stroke-linejoin": "round",
+                "arrow-end": "diamond-narrow-short"};
+
+            var paper;
+            var cellSet;
+            var TREE = "M5,13 L15,2 L25,13 L22,14 L28,22 L19,23 L19,28 L11,28 L11,23 L2,22 L8,14 z";
+            var snake = [];
+            var canvasSnake;
+            var gMap;
+
+            function snakePath(sn) {
+                var tail = sn.length - 1;
+                var p = format("M{0},{1}",
+                    sn[tail][1] * cellSize + zx + cellSize / 2,
+                    sn[tail][0] * cellSize + zx + cellSize / 2
+                );
+                for (var i = tail - 1; i >= 0; i--) {
+                    p += format("L{0},{1}",
+                        sn[i][1] * cellSize + zx + cellSize / 2,
+                        sn[i][0] * cellSize + zx + cellSize / 2
+                    );
+                }
+//                p += "Z";
+                return p;
+            }
+
+
+            this.createCanvas = function (dom, map) {
+                gMap = map;
+                paper = Raphael(dom, fullSize, fullSize, 0, 0);
+                cellSet = paper.set();
+                paper.rect(zx, zx, cellSize * cellN, cellSize * cellN).attr(attrOuter);
+                for (var i = 1; i < cellN; i++) {
+                    paper.path(Raphael.format("M{0},{2}L{1},{2}Z",
+                        zx, zx + cellSize * cellN, zx + cellSize * i
+                    )).attr(attrInner);
+                    paper.path(Raphael.format("M{0},{1}L{0},{2}Z",
+                        zx + cellSize * i, zx, zx + cellSize * cellN
+                    )).attr(attrInner);
+                }
+                for (i = 0; i < map.length; i++) {
+                    for (var j = 0; j < map[0].length; j++) {
+                        if (map[i][j] === 'T') {
+                            cellSet[i * cellN + j] = paper.path(TREE).transform(
+                                "t" + (zx + cellSize * j) + "," +
+                                    (zx + cellSize * i)).attr(attrTree);
+                        }
+                        else if (map[i][j] === 'C') {
+                            cellSet[i * cellN + j] = paper.circle(
+                                zx + cellSize * j + cellSize / 2,
+                                zx + cellSize * i + cellSize / 2,
+                                cellSize / 2 - 6
+                            ).attr(attrCherry);
+                        }
+                        else if (parseInt(map[i][j]) === 0) {
+                            snake[0] = [i, j];
+                        }
+                        else if (parseInt(map[i][j])) {
+                            snake[parseInt(map[i][j])] = [i, j];
+                        }
+                    }
+                }
+                canvasSnake = paper.path(snakePath(snake)).attr(attrSnake);
+            };
+
+            this.animateCanvas = function (route) {
+                for (var i = 0; i < route.length; i++) {
+                    var act = route[i];
+                    var head = snake[0];
+                    var dir = [head[0] - snake[1][0], head[1] - snake[1][1]];
+                    var nHead;
+                    if (act == 'F') {
+                        nHead = [head[0] + dir[0], head[1] + dir[1]];
+                    }
+                    else if (act == 'L') {
+                        nHead = [head[0] - dir[1], head[1] + dir[0]];
+                    }
+                    else if (act == 'R') {
+                        nHead = [head[0] + dir[1], head[1] - dir[0]];
+                    }
+                    var nSnake = [];
+                    for (var j = 0; j < snake.length - 1; j++) {
+                        nSnake.push(snake[j]);
+                    }
+                    var nSnakeShortPath = (snakePath(nSnake));
+                    nSnake.unshift(nHead);
+                    if (nHead[0] >=0 && nHead[1] < cellN &&
+                            nHead[1] >=0 && nHead[1] < cellN &&
+                            gMap[nHead[0]][nHead[1]] === "C"){
+                        nSnake.push(snake[j]);
+                    }
+                    var nSnakePath = (snakePath(nSnake));
+                    setTimeout(function(){
+                        var tempHead = nHead.slice(0, nHead.length);
+                        var spath = nSnakePath;
+                        var sShortPath = nSnakeShortPath;
+                        return function() {
+                            canvasSnake.animate({"path": sShortPath},
+                                delay/2,
+                                function() {
+                                    canvasSnake.animate({"path": spath},
+                                        delay/3)
+                                }
+                            );
+                            if (gMap[tempHead[0]][tempHead[1]] === "C") {
+                                var ch = cellSet[tempHead[0] * cellN + tempHead[1]];
+                                ch.animate({"r": 0}, delay, callback=function() {
+                                    ch.remove();
+                                });
+                            }
+                            if (gMap[tempHead[0]][tempHead[1]] === "T") {
+                                var t = cellSet[tempHead[0] * cellN + tempHead[1]];
+                                t.toFront();
+                                t.animate({"fill": colorOrange}, delay);
+                            }
+                        }
+                    }(), stepDelay * i + delay);
+                    snake = nSnake;
+                }
+            };
+        }
 
 
     }
