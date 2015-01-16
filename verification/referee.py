@@ -69,7 +69,7 @@ def initial_referee(field_map):
     }
 
 
-def process_referee(referee_data, route):
+def process_referee(referee_data, route, seed="checkio"):
     field_map = referee_data["input"]
     temp_map = [[c for c in row] for row in field_map]
     step_count = referee_data["step_count"]
