@@ -7,7 +7,7 @@ EMPTY = "."
 
 SIZE = 10
 DISTANCE = 5
-INITIAL_STEPS = 300
+INITIAL_STEPS = 200
 
 
 def move_snake(field_map):
@@ -55,6 +55,7 @@ if __name__ == '__main__':
         head = find_snake(field_map)[SNAKE_HEAD]
         crow, ccol = create_cherry(field_map, head)
         temp_map[crow][ccol] = CHERRY
+        field_map = pack_map(temp_map)
         step_count = INITIAL_STEPS
         while True:
             route = func(field_map[:])
