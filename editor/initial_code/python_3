@@ -7,7 +7,7 @@ EMPTY = "."
 
 SIZE = 10
 DISTANCE = 5
-INITIAL_STEPS = 300
+INITIAL_STEPS = 200
 
 
 def move_snake(field_map):
